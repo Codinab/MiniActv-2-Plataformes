@@ -12,7 +12,8 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
- */
+ *//*
+
 package com.google.android.gms.location.sample.locationupdates
 
 import android.Manifest
@@ -36,11 +37,11 @@ import androidx.core.app.ActivityCompat
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
-import com.google.android.gms.location.sample.locationupdates.databinding.MainBinding
 import com.google.android.material.snackbar.Snackbar
 import java.text.DateFormat
 import java.util.*
 
+*/
 /**
  * Using location settings.
  *
@@ -56,37 +57,50 @@ import java.util.*
  *
  * This sample allows the user to request location updates using the ACCESS_FINE_LOCATION setting
  * (as specified in AndroidManifest.xml).
- */
+ *//*
+
 class MainActivityOld : AppCompatActivity() {
-    /**
+    */
+/**
      * Provides access to the Fused Location Provider API.
-     */
+     *//*
+
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
 
-    /**
+    */
+/**
      * Provides access to the Location Settings API.
-     */
+     *//*
+
     private lateinit var mSettingsClient: SettingsClient
 
-    /**
+    */
+/**
      * Stores parameters for requests to the FusedLocationProviderApi.
-     */
+     *//*
+
     private lateinit var mLocationRequest: LocationRequest
 
-    /**
+    */
+/**
      * Stores the types of location services the client is interested in using. Used for checking
      * settings to determine if the device has optimal location settings.
-     */
+     *//*
+
     private lateinit var mLocationSettingsRequest: LocationSettingsRequest
 
-    /**
+    */
+/**
      * Callback for Location events.
-     */
+     *//*
+
     private lateinit var mLocationCallback: LocationCallback
 
-    /**
+    */
+/**
      * Represents a geographical location.
-     */
+     *//*
+
 
     // UI Widgets.
     private lateinit var mStartUpdatesButton: Button
@@ -102,10 +116,12 @@ class MainActivityOld : AppCompatActivity() {
 
     //lateinit var startForResult: ActivityResultLauncher<String[]>
 
-    /**
+    */
+/**
      * Tracks the status of the location updates request. Value changes when the user presses the
      * Start Updates and Stop Updates buttons.
-     */
+     *//*
+
     private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
     private  var mRequestingLocationUpdates: Boolean = false
 
@@ -114,9 +130,11 @@ class MainActivityOld : AppCompatActivity() {
     private var settings = false
 
 
-    /**
+    */
+/**
      * Time when the location was updated represented as a String.
-     */
+     *//*
+
     private var mLastUpdateTime: String? = null
     //@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 
@@ -221,11 +239,13 @@ class MainActivityOld : AppCompatActivity() {
         buildLocationSettingsRequest()
     }
 
-    /**
+    */
+/**
      * Updates fields based on data stored in the bundle.
      *
      * @param savedInstanceState The activity state saved in the Bundle.
-     */
+     *//*
+
     //@RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun updateValuesFromBundle(savedInstanceState: Bundle?) {
         if (savedInstanceState != null) {
@@ -244,7 +264,8 @@ class MainActivityOld : AppCompatActivity() {
         }
     }
 
-    /**
+    */
+/**
      * Sets up the location request. Android has two location request settings:
      * `ACCESS_COARSE_LOCATION` and `ACCESS_FINE_LOCATION`. These settings control
      * the accuracy of the current location. This sample uses ACCESS_FINE_LOCATION, as defined in
@@ -258,7 +279,8 @@ class MainActivityOld : AppCompatActivity() {
      *
      * These settings are appropriate for mapping applications that show real-time location
      * updates.
-     */
+     *//*
+
 
     private fun createLocationRequest() {
         mLocationRequest = LocationRequest.Builder(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS)
@@ -283,9 +305,11 @@ class MainActivityOld : AppCompatActivity() {
     
 
 
-    /*
+    */
+/*
      * Creates a callback for receiving location events.
-     */
+     *//*
+
      
  
     private fun createLocationCallback() {
@@ -302,11 +326,13 @@ class MainActivityOld : AppCompatActivity() {
         }
     }
 
-    /**
+    */
+/**
      * Uses a [com.google.android.gms.location.LocationSettingsRequest.Builder] to build
      * a [com.google.android.gms.location.LocationSettingsRequest] that is used for checking
      * if a device has the needed location settings.
-     */
+     *//*
+
     private fun buildLocationSettingsRequest() {
         val builder = LocationSettingsRequest.Builder()
         builder.addLocationRequest(mLocationRequest)
@@ -314,10 +340,12 @@ class MainActivityOld : AppCompatActivity() {
     }
 
 
-    /**
+    */
+/**
      * Handles the Start Updates button and requests start of location updates. Does nothing if
      * updates have already been requested.
-     */
+     *//*
+
     fun startUpdatesButtonHandler(view: View?) {
         if (!mRequestingLocationUpdates) {
             mRequestingLocationUpdates = true
@@ -326,9 +354,11 @@ class MainActivityOld : AppCompatActivity() {
         }
     }
 
-    /**
+    */
+/**
      * Handles the Stop Updates button, and requests removal of location updates.
-     */
+     *//*
+
     fun stopUpdatesButtonHandler(view: View?) {
         // It is a good practice to remove location requests when the activity is in a paused or
         // stopped state. Doing so helps battery performance and is especially
@@ -336,10 +366,12 @@ class MainActivityOld : AppCompatActivity() {
         stopLocationUpdates()
     }
 
-    /**
+    */
+/**
      * Requests location updates from the FusedLocationApi. Note: we don't call this unless location
      * runtime permission has been granted.
-     */
+     *//*
+
     private fun startLocationUpdates() {
         // Begin by checking if the device has the necessary location settings.
         mSettingsClient.checkLocationSettings(mLocationSettingsRequest)
@@ -384,20 +416,24 @@ class MainActivityOld : AppCompatActivity() {
             }
     }
 
-    /**
+    */
+/**
      * Updates all UI fields.
-     */
+     *//*
+
     private fun updateUI() {
         setButtonsEnabledState()
         updateLocationUI()
     }
 
-    /**
+    */
+/**
      * Disables both buttons when functionality is disabled due to insuffucient location settings.
      * Otherwise ensures that only one button is enabled at any time. The Start Updates button is
      * enabled if the user is not requesting location updates. The Stop Updates button is enabled
      * if the user is requesting location updates.
-     */
+     *//*
+
     private fun setButtonsEnabledState() {
         if (mRequestingLocationUpdates) {
             mStartUpdatesButton.isEnabled = false
@@ -408,9 +444,11 @@ class MainActivityOld : AppCompatActivity() {
         }
     }
 
-    /**
+    */
+/**
      * Sets the value of the UI fields for the location latitude, longitude and last update time.
-     */
+     *//*
+
     private fun updateLocationUI() {
         mLatitudeTextView.text = mCurrentLocation?.let {
             String.format(
@@ -430,9 +468,11 @@ class MainActivityOld : AppCompatActivity() {
         )
     }
 
-    /**
+    */
+/**
      * Removes location updates from the FusedLocationApi.
-     */
+     *//*
+
     private fun stopLocationUpdates() {
         if (!mRequestingLocationUpdates) {
             Log.d(TAG, "stopLocationUpdates: updates never requested, no-op.")
@@ -467,9 +507,11 @@ class MainActivityOld : AppCompatActivity() {
             stopLocationUpdates()
     }
 
-    /**
+    */
+/**
      * Stores activity data in the Bundle.
-     */
+     *//*
+
     public override fun onSaveInstanceState(savedInstanceState: Bundle) {
         savedInstanceState.putBoolean(KEY_REQUESTING_LOCATION_UPDATES, mRequestingLocationUpdates)
         //savedInstanceState.putParcelable(KEY_LOCATION, mCurrentLocation)
@@ -477,13 +519,15 @@ class MainActivityOld : AppCompatActivity() {
         super.onSaveInstanceState(savedInstanceState)
     }
 
-    /**
+    */
+/**
      * Shows a [Snackbar].
      *
      * @param mainTextStringId The id for the string resource for the Snackbar text.
      * @param actionStringId   The text of the action item.
      * @param listener         The listener associated with the Snackbar action.
-     */
+     *//*
+
     private fun showSnackbar(
         mainTextStringId: Int, actionStringId: Int,
         listener: View.OnClickListener
@@ -496,9 +540,11 @@ class MainActivityOld : AppCompatActivity() {
             .setAction(getString(actionStringId), listener).show()
     }
 
-    /**
+    */
+/**
      * Return the current state of the permissions needed.
-     */
+     *//*
+
     private fun checkPermissions(): Boolean {
         val permissionFineState = ActivityCompat.checkSelfPermission(
             this,
@@ -557,20 +603,26 @@ class MainActivityOld : AppCompatActivity() {
     companion object {
         private val TAG = MainActivity::class.java.simpleName
 
-        /**
+        */
+/**
          * Constant used in the location settings dialog.
-         */
+         *//*
+
         private const val REQUEST_CHECK_SETTINGS = 0x1
 
-        /**
+        */
+/**
          * The desired interval for location updates. Inexact. Updates may be more or less frequent.
-         */
+         *//*
+
         private const val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 100  // 10000
 
-        /**
+        */
+/**
          * The fastest rate for active location updates. Exact. Updates will never be more frequent
          * than this value.
-         */
+         *//*
+
         private const val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2
 
@@ -579,4 +631,4 @@ class MainActivityOld : AppCompatActivity() {
         private const val KEY_LOCATION = "location"
         private const val KEY_LAST_UPDATED_TIME_STRING = "last-updated-time-string"
     }
-}
+}*/
