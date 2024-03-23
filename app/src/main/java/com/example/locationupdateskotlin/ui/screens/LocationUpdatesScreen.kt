@@ -33,24 +33,32 @@ import com.example.locationupdateskotlin.data.model.LocationData
 import com.example.locationupdateskotlin.ui.components.UIConstants
 import com.example.locationupdateskotlin.viewmodel.LocationViewModel
 
+/**
+ * The main screen for displaying location updates and handling permissions.
+ * @param viewModel The ViewModel that holds the state and logic for location updates.
+ */
 @Composable
 fun LocationUpdatesScreen(viewModel: LocationViewModel) {
     val context = LocalContext.current
 
-    // Setup for handling permissions and location settings.
+    // Initializes permission handling logic.
     SetupPermissionHandling(viewModel, context)
 
     val locationData by viewModel.locationData.observeAsState()
     val isUpdatingLocation by viewModel.isUpdatingLocation.observeAsState(false)
 
+    // Displays the main content of the app, including location data and control buttons.
     ScaffoldWithContent(locationData, isUpdatingLocation, viewModel)
 }
 
-
+/**
+ * Sets up permission handling, including the launchers for activity results.
+ * @param viewModel The ViewModel for accessing and updating location data and state.
+ * @param context The current context.
+ */
 @Composable
 fun SetupPermissionHandling(viewModel: LocationViewModel, context: Context) {
-    // Permission and GPS settings logic...
-
+    // Handles the flow for requesting multiple permissions.
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -58,25 +66,31 @@ fun SetupPermissionHandling(viewModel: LocationViewModel, context: Context) {
         viewModel.onPermissionsResult(allPermissionsGranted)
     }
 
+    // Observes the event for permission requests.
     val permissionRequestEvent by viewModel.permissionRequestEvent.observeAsState()
     permissionRequestEvent?.getContentIfNotHandled()?.let { permissions ->
         permissionLauncher.launch(permissions)
     }
 
+    // Observes the event for location settings checks.
     val locationSettingsEvent by viewModel.locationSettingsEvent.observeAsState()
     locationSettingsEvent?.getContentIfNotHandled()?.let {
-        // Direct users to enable permissions in app settings
+        // Shows an alert dialog for permissions activation.
         AlertDialogForPermissionActivation(context)
     }
 
+    // Observes the event for showing a GPS activation prompt.
     val showGPSPromptEvent by viewModel.showGPSPromptEvent.observeAsState()
     showGPSPromptEvent?.getContentIfNotHandled()?.let {
-        // Prompt users to enable GPS
+        // Shows an alert dialog for GPS activation.
         AlertDialogForGpsActivation(context)
     }
 }
 
-
+/**
+ * Displays an AlertDialog prompting the user to activate permissions for location updates.
+ * @param context The current context for starting an Intent to the settings page.
+ */
 @Composable
 fun AlertDialogForPermissionActivation(context: Context) {
     var showDialog by remember { mutableStateOf(true) }
@@ -102,6 +116,10 @@ fun AlertDialogForPermissionActivation(context: Context) {
     }
 }
 
+/**
+ * Displays an AlertDialog prompting the user to enable GPS for location updates.
+ * @param context The current context for starting an Intent to the location settings page.
+ */
 @Composable
 fun AlertDialogForGpsActivation(context: Context) {
     var showDialog by remember { mutableStateOf(true) }
@@ -127,8 +145,12 @@ fun AlertDialogForGpsActivation(context: Context) {
     }
 }
 
-
-
+/**
+ * Scaffold wrapper for content displaying location data and control buttons.
+ * @param locationData The current location data to display.
+ * @param isUpdatingLocation Whether the app is currently updating location.
+ * @param viewModel The ViewModel for controlling location updates.
+ */
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun ScaffoldWithContent(
@@ -136,9 +158,16 @@ fun ScaffoldWithContent(
     isUpdatingLocation: Boolean,
     viewModel: LocationViewModel,
 ) {
+    // Layout for displaying location data and control buttons.
     ColumnLayoutForLocationData(locationData, isUpdatingLocation, viewModel)
 }
 
+/**
+ * Defines the column layout for displaying location data and control buttons.
+ * @param locationData The location data to display.
+ * @param isUpdatingLocation Whether location updates are active.
+ * @param viewModel The ViewModel for controlling location updates.
+ */
 @Composable
 fun ColumnLayoutForLocationData(
     locationData: LocationData?,
@@ -152,28 +181,39 @@ fun ColumnLayoutForLocationData(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Displays the current location data.
         LocationDataDisplay(locationData)
         Spacer(modifier = Modifier.height(UIConstants.SPACING_LARGE.dp))
+        // Displays control buttons for starting/stopping location updates.
         ControlButtons(isUpdatingLocation, viewModel)
     }
 }
 
-
+/**
+ * Displays the current location data.
+ * @param locationData The location data to display.
+ */
 @Composable
 fun LocationDataDisplay(locationData: LocationData?) {
     if (locationData != null) {
+        // Displaying latitude, longitude, and last update time if location data is available.
         Text(text = stringResource(id = R.string.latitude_label) + ": ${locationData.latitude}")
         Spacer(modifier = Modifier.height(UIConstants.SPACING_SMALL.dp))
         Text(text = stringResource(id = R.string.longitude_label) + ": ${locationData.longitude}")
         Spacer(modifier = Modifier.height(UIConstants.SPACING_MEDIUM.dp))
         Text(text = stringResource(id = R.string.last_update_time_label) + ": ${locationData.timestamp}")
     } else {
+        // Displaying a message when no location data is available.
         Text(text = stringResource(id = R.string.no_location_data))
     }
 }
 
 
-
+/**
+ * Defines control buttons for starting and stopping location updates.
+ * @param isUpdatingLocation Whether location updates are currently being fetched.
+ * @param viewModel The ViewModel to control the location updates.
+ **/
 @Composable
 fun ControlButtons(
     isUpdatingLocation: Boolean,
