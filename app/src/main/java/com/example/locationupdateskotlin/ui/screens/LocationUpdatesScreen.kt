@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +25,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,9 +45,6 @@ import com.example.locationupdateskotlin.viewmodel.LocationViewModel
 fun LocationUpdatesScreen(viewModel: LocationViewModel) {
     val context = LocalContext.current
 
-    // Use the lifecycle to manage location updates.
-    CheckLocationSettingsOnResume(viewModel)
-
     // Setup for handling permissions and location settings.
     SetupPermissionHandling(viewModel, context)
 
@@ -59,14 +60,15 @@ fun SetupPermissionHandling(viewModel: LocationViewModel, context: Context) {
     // Permission and GPS settings logic...
 
     val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        viewModel.onPermissionsResult(isGranted)
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val allPermissionsGranted = permissions.entries.any { it.value }
+        viewModel.onPermissionsResult(allPermissionsGranted)
     }
 
     val permissionRequestEvent by viewModel.permissionRequestEvent.observeAsState()
-    permissionRequestEvent?.getContentIfNotHandled()?.let { permission ->
-        permissionLauncher.launch(permission)
+    permissionRequestEvent?.getContentIfNotHandled()?.let { permissions ->
+        permissionLauncher.launch(permissions)
     }
 
     val locationSettingsEvent by viewModel.locationSettingsEvent.observeAsState()
@@ -82,54 +84,58 @@ fun SetupPermissionHandling(viewModel: LocationViewModel, context: Context) {
     }
 }
 
-@Composable
-fun CheckLocationSettingsOnResume(viewModel: LocationViewModel) {
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_STOP) {
-                viewModel.stopLocationUpdates()
-            }
-        }
 
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
+
+@Composable
+fun AlertDialogForPermissionActivation(context: Context) {
+    var showDialog by remember { mutableStateOf(true) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Location Settings") },
+            text = { Text("Your current location settings prevent us from obtaining location information. Please adjust your settings.") },
+            confirmButton = {
+                Button(onClick = {
+                    context.startActivity(Intent(ACTION_LOCATION_SOURCE_SETTINGS))
+                }) {
+                    Text("Adjust Settings")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Close")
+                }
+            }
+        )
     }
 }
 
 @Composable
-fun AlertDialogForPermissionActivation(context: Context) {
-    AlertDialog(
-        onDismissRequest = {},
-        title = { Text("Location Settings") },
-        text = { Text("Your current location settings prevent us from obtaining location information. Please adjust your settings.") },
-        confirmButton = {
-            Button(onClick = {
-                context.startActivity(Intent(ACTION_LOCATION_SOURCE_SETTINGS))
-            }) {
-                Text("Adjust Settings")
+fun AlertDialogForGpsActivation(context: Context) {
+    var showDialog by remember { mutableStateOf(true) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Enable GPS") },
+            text = { Text("GPS is needed for location updates. Please enable GPS.") },
+            confirmButton = {
+                Button(onClick = {
+                    context.startActivity(Intent(ACTION_LOCATION_SOURCE_SETTINGS))
+                }) {
+                    Text("Go to Settings")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Close")
+                }
             }
-        }
-    )
+        )
+    }
 }
 
-@Composable
-fun AlertDialogForGpsActivation(context: Context) {
-    AlertDialog(
-        onDismissRequest = {},
-        title = { Text("Enable GPS") },
-        text = { Text("GPS is needed for location updates. Please enable GPS.") },
-        confirmButton = {
-            Button(onClick = {
-                //context.startActivity(Intent(ACTION_LOCATION_SOURCE_SETTINGS))
-            }) {
-                Text("Go to Settings")
-            }
-        }
-    )
-}
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -138,13 +144,7 @@ fun ScaffoldWithContent(
     isUpdatingLocation: Boolean,
     viewModel: LocationViewModel,
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Location Updates") })
-        }
-    ) {
-        ColumnLayoutForLocationData(locationData, isUpdatingLocation, viewModel)
-    }
+    ColumnLayoutForLocationData(locationData, isUpdatingLocation, viewModel)
 }
 
 @Composable
@@ -164,14 +164,7 @@ fun ColumnLayoutForLocationData(
         Spacer(modifier = Modifier.height(16.dp))
         ControlButtons(
             isUpdatingLocation = isUpdatingLocation,
-            onRequestPermissions = {
-                // Example toggle or decision mechanism
-                val useFineLocation = true // This could be determined by user input or app logic
-                viewModel.requestPermissions(useFineLocation)
-            },
-            onStopClick = {
-                viewModel.stopLocationUpdates()
-            }
+            viewModel = viewModel
         )
     }
 }
@@ -193,12 +186,13 @@ fun LocationDataDisplay(locationData: LocationData?) {
 @Composable
 fun ControlButtons(
     isUpdatingLocation: Boolean,
-    onRequestPermissions: () -> Unit, // Rename for clarity
-    onStopClick: () -> Unit,
+    viewModel: LocationViewModel,
 ) {
     Row {
         Button(
-            onClick = onRequestPermissions, // Call ViewModel's requestPermissions
+            onClick = {
+                viewModel.requestPermissions()
+            },
             enabled = !isUpdatingLocation,
             modifier = Modifier.weight(1f)
         ) {
@@ -206,7 +200,9 @@ fun ControlButtons(
         }
         Spacer(modifier = Modifier.width(8.dp))
         Button(
-            onClick = onStopClick,
+            onClick = {
+                viewModel.stopLocationUpdates()
+            },
             enabled = isUpdatingLocation,
             modifier = Modifier.weight(1f)
         ) {

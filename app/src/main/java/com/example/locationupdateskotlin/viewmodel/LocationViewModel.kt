@@ -1,7 +1,5 @@
 package com.example.locationupdateskotlin.viewmodel
 
-import android.Manifest.permission.ACCESS_COARSE_LOCATION
-import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
@@ -27,15 +25,18 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
     val locationData = MutableLiveData<LocationData?>()
     val isUpdatingLocation = MutableLiveData(false)
 
-    val permissionRequestEvent = MutableLiveData<Event<String>>()
+    val permissionRequestEvent = MutableLiveData<Event<Array<String>>>()
     val locationSettingsEvent = MutableLiveData<Event<Unit>>()
     val showGPSPromptEvent = MutableLiveData<Event<Unit>>()
 
     private val settingsClient: SettingsClient = LocationServices.getSettingsClient(application)
 
-    fun requestPermissions(useFineLocation: Boolean) {
-        val permission = if (useFineLocation) ACCESS_FINE_LOCATION else ACCESS_COARSE_LOCATION
-        permissionRequestEvent.value = Event(permission)
+    fun requestPermissions() {
+        val permissions = arrayOf(
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+        permissionRequestEvent.value = Event(permissions)
     }
 
 
@@ -103,15 +104,8 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun startLocationUpdates() {
+    private fun startLocationUpdates() {
         viewModelScope.launch {
-            val locationRequest =
-                LocationRequest.Builder(5000) // Fastest update interval in milliseconds
-                    .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-                    .setWaitForAccurateLocation(false)
-                    .setMinUpdateIntervalMillis(5000) // Minimum update interval in milliseconds
-                    .setMaxUpdateDelayMillis(10000) // Update interval in milliseconds
-                    .build()
             try {
                 fusedLocationClient.requestLocationUpdates(
                     locationRequest,
@@ -139,12 +133,6 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
 
     companion object {
 
-        /**
-         * Constant used in the location settings dialog.
-         */
-
-        private const val REQUEST_CHECK_SETTINGS = 0x1
-
 
         /**
          * The desired interval for location updates. Inexact. Updates may be more or less frequent.
@@ -161,9 +149,5 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
         private const val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2
 
-        // Keys for storing activity state in the Bundle.
-        private const val KEY_REQUESTING_LOCATION_UPDATES = "requesting-location-updates"
-        private const val KEY_LOCATION = "location"
-        private const val KEY_LAST_UPDATED_TIME_STRING = "last-updated-time-string"
     }
 }
