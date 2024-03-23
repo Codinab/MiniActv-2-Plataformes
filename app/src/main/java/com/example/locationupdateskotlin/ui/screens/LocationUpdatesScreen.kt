@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -17,28 +16,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
-import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
-
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.unit.dp
 import com.example.locationupdateskotlin.R
 import com.example.locationupdateskotlin.data.model.LocationData
+import com.example.locationupdateskotlin.ui.components.UIConstants
 import com.example.locationupdateskotlin.viewmodel.LocationViewModel
 
 @Composable
@@ -85,7 +77,6 @@ fun SetupPermissionHandling(viewModel: LocationViewModel, context: Context) {
 }
 
 
-
 @Composable
 fun AlertDialogForPermissionActivation(context: Context) {
     var showDialog by remember { mutableStateOf(true) }
@@ -93,18 +84,18 @@ fun AlertDialogForPermissionActivation(context: Context) {
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Location Settings") },
-            text = { Text("Your current location settings prevent us from obtaining location information. Please adjust your settings.") },
+            title = { Text(text = stringResource(id = R.string.location_settings_title)) },
+            text = { Text(text = stringResource(id = R.string.location_settings_message)) },
             confirmButton = {
                 Button(onClick = {
                     context.startActivity(Intent(ACTION_LOCATION_SOURCE_SETTINGS))
                 }) {
-                    Text("Adjust Settings")
+                    Text(text = stringResource(id = R.string.adjust_settings))
                 }
             },
             dismissButton = {
                 Button(onClick = { showDialog = false }) {
-                    Text("Close")
+                    Text(text = stringResource(id = R.string.close))
                 }
             }
         )
@@ -118,23 +109,24 @@ fun AlertDialogForGpsActivation(context: Context) {
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Enable GPS") },
-            text = { Text("GPS is needed for location updates. Please enable GPS.") },
+            title = { Text(text = stringResource(id = R.string.enable_gps_title)) },
+            text = { Text(text = stringResource(id = R.string.enable_gps_message)) },
             confirmButton = {
                 Button(onClick = {
                     context.startActivity(Intent(ACTION_LOCATION_SOURCE_SETTINGS))
                 }) {
-                    Text("Go to Settings")
+                    Text(text = stringResource(id = R.string.go_to_settings))
                 }
             },
             dismissButton = {
                 Button(onClick = { showDialog = false }) {
-                    Text("Close")
+                    Text(text = stringResource(id = R.string.close))
                 }
             }
         )
     }
 }
+
 
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -156,16 +148,13 @@ fun ColumnLayoutForLocationData(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(UIConstants.PADDING_STANDARD.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         LocationDataDisplay(locationData)
-        Spacer(modifier = Modifier.height(16.dp))
-        ControlButtons(
-            isUpdatingLocation = isUpdatingLocation,
-            viewModel = viewModel
-        )
+        Spacer(modifier = Modifier.height(UIConstants.SPACING_LARGE.dp))
+        ControlButtons(isUpdatingLocation, viewModel)
     }
 }
 
@@ -173,15 +162,17 @@ fun ColumnLayoutForLocationData(
 @Composable
 fun LocationDataDisplay(locationData: LocationData?) {
     if (locationData != null) {
-        Text(text = "Latitude: ${locationData.latitude}")
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(text = "Longitude: ${locationData.longitude}")
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "Last Update: ${locationData.timestamp}")
+        Text(text = stringResource(id = R.string.latitude_label) + ": ${locationData.latitude}")
+        Spacer(modifier = Modifier.height(UIConstants.SPACING_SMALL.dp))
+        Text(text = stringResource(id = R.string.longitude_label) + ": ${locationData.longitude}")
+        Spacer(modifier = Modifier.height(UIConstants.SPACING_MEDIUM.dp))
+        Text(text = stringResource(id = R.string.last_update_time_label) + ": ${locationData.timestamp}")
     } else {
-        Text("No location data available")
+        Text(text = stringResource(id = R.string.no_location_data))
     }
 }
+
+
 
 @Composable
 fun ControlButtons(
@@ -196,7 +187,7 @@ fun ControlButtons(
             enabled = !isUpdatingLocation,
             modifier = Modifier.weight(1f)
         ) {
-            Text("Start Updates")
+            Text(text = stringResource(id = R.string.start_updates))
         }
         Spacer(modifier = Modifier.width(8.dp))
         Button(
